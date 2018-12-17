@@ -7,6 +7,8 @@ typedef struct {
 	char	*device;
 	u_int8_t	mymac[6];	// must include <sys/types.h>
 	struct in_addr	myip;	// must include <netinet/in.h>
+	u_int8_t	vmac[6];	// must include <sys/types.h>
+	struct in_addr	vip;	// must include <netinet/in.h>
 	struct in_addr	vmask;	// must include <netinet/in.h>
 	int	IpTTL;
 	int	MTU;
@@ -15,3 +17,4 @@ typedef struct {
 
 
 int SetDefaultParam();
+int ReadParam(char *fname);
