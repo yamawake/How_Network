@@ -17,4 +17,4 @@ typedef struct {
 
 
 int SetDefaultParam();
-int ReadParam(char *fname);
+int ReadParam(char *fname);	// 設定ファイルからのパラメータ読み込み処理

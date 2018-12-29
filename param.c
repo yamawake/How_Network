@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <net/ethernet.h>
+#include "ether.h"
 #include "param.h"
 
 
@@ -55,6 +57,26 @@ int ReadParam(char *fname)
 						printf("ReadParam:MTU(%d) <= ETHERMTU(%d)\n", Param.MTU, ETHERMTU);
 						Param.MTU=ETHERMTU;
 					}
+				}
+			} else if(strcmp(ptr, "gateway")==0){
+				if((ptr=strtok_r(NULL, "\r\n", &saveptr))!=NULL){
+					Param.gateway.s_addr=inet_addr(ptr);	// must include <arpa/inet.h>
+				}
+			} else if(strcmp(ptr, "device")==0){
+				if((ptr=strtok_r(NULL, " \r\n", &saveptr))!=NULL){
+					Param.device=strdup(ptr);
+				}
+			} else if(strcmp(ptr, "vmac")==0){
+				if((ptr=strtok_r(NULL, " \r\n", &saveptr))!=NULL){
+					my_ether_aton(ptr, Param.vmac);
+				}
+			} else if(strcmp(ptr, "vip")==0){
+				if((ptr=strtok_r(NULL, " \r\n", &saveptr))!=NULL){
+					Param.vip.s_addr=inet_addr(ptr);
+				}
+			} else if(strcmp(ptr, "vmask")==0){
+				if((ptr=strtok_r(NULL, " \r\n", &saveptr))!=NULL){
+					Param.vmask.s_addr=inet_addr(ptr);
 				}
 			}
 		}
