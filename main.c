@@ -1,17 +1,24 @@
 #include <stdio.h>
 #include <unistd.h>	// close()
-#include <stdlib.h>
+#include <stdlib.h>	// exit()
 #include <string.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>	// ioctl()
 #include <netinet/in.h>
 #include <linux/if.h>
 #include <arpa/inet.h>
+#include <signal.h>	// signal()
+#include <time.h>	// time()
 #include "ether.h"
 #include "param.h"
 #include "sock.h"
+#include "ip.h"
+
 
 PARAM	Param;
+
+int EndFlag=0;
+int DeviceSoc;
 
 
 int show_ifreq(char *name)
@@ -78,6 +85,11 @@ int show_ifreq(char *name)
 
 }
 
+void sig_term(int sig)
+{
+	EndFlag=1;
+}
+
 int main(int argc, char *argv[])
 {
 	int paramFlag=0;
@@ -87,12 +99,12 @@ int main(int argc, char *argv[])
 
 	for (int i = 1; i < argc; i++){
 		if(ReadParam(argv[1])==-1){
-			exit(-1);	// must include <stdlib.h>
+			exit(-1);
 		}
 	}
 	if(paramFlag==0){
 		if(ReadParam("./MyEth.ini")==-1){
-			exit(-1);	// must include <stdlib.h>
+			exit(-1);
 		}
 	}
 	
@@ -100,12 +112,26 @@ int main(int argc, char *argv[])
 	printf("IP-TTL=%d\n", Param.IpTTL);
 	printf("MTU=%d\n", Param.MTU);
 
+	srandom(time(NULL));
+
+	IpRecvBufInit();
+
+	if((DeviceSoc=init_socket(Param.device))==-1){
+		exit(-1);
+	}
+
 	printf("devic=%s\n", Param.device);
 	printf("+++++++++++++++++++++++++++++++++++++++\n");
 	show_ifreq(Param.device);
 	printf("+++++++++++++++++++++++++++++++++++++++\n");
 
 	printf("vmac=%s\n", my_ether_ntoa_r(Param.vmac, buf1));
+	printf("vip=%s\n", inet_ntop(AF_INET, &Param.vip, buf1, sizeof(buf1)));
+	printf("vmask=%s\n", inet_ntop(AF_INET, &Param.vmask, buf1, sizeof(buf1)));
+	printf("gateway=%s\n", inet_ntop(AF_INET, &Param.gateway, buf1, sizeof(buf1)));
+
+	signal(SIGINT, sig_term);
+
 
 	return (0);
 }

@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdlib.h>	// atoi()
+#include <string.h>	// strtok_r(), strdup(), strcomp()
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -47,12 +47,12 @@ int ReadParam(char *fname)
 
 		if(ptr!=NULL){
 			if(strcmp(ptr, "IP-TTL")==0){
-				if((ptr=strtok_r(NULL, "\r\n", &saveptr))!=NULL){	// must include <string.h>
+				if((ptr=strtok_r(NULL, "\r\n", &saveptr))!=NULL){
 					Param.IpTTL=atoi(ptr);
 				}
 			} else if(strcmp(ptr, "MTU")==0){
 				if((ptr=strtok_r(NULL,"\r\n", &saveptr))!=NULL){
-					Param.MTU=atoi(ptr);	// must include <stdlib.h>
+					Param.MTU=atoi(ptr);
 					if(Param.MTU>ETHERMTU){
 						printf("ReadParam:MTU(%d) <= ETHERMTU(%d)\n", Param.MTU, ETHERMTU);
 						Param.MTU=ETHERMTU;
@@ -60,7 +60,7 @@ int ReadParam(char *fname)
 				}
 			} else if(strcmp(ptr, "gateway")==0){
 				if((ptr=strtok_r(NULL, "\r\n", &saveptr))!=NULL){
-					Param.gateway.s_addr=inet_addr(ptr);	// must include <arpa/inet.h>
+					Param.gateway.s_addr=inet_addr(ptr);
 				}
 			} else if(strcmp(ptr, "device")==0){
 				if((ptr=strtok_r(NULL, " \r\n", &saveptr))!=NULL){

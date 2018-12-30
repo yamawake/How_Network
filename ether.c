@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdlib.h>	// free()
+#include <string.h>	// strdup(), strtok_r(), strtol()
 #include <sys/types.h>
 #include <netinet/in.h>
 #include "ether.h"
@@ -22,12 +22,12 @@ int my_ether_aton(char *str, u_int8_t *mac){
 
 	char	*ptr;
 	char	*saveptr=NULL;
-	char	*tmp=strdup(str);	// must include <string.h>
+	char	*tmp=strdup(str);
 	int	c;
 
 	for(c=0, ptr=strtok_r(tmp, ":", &saveptr); c < 6; c++ , ptr=strtok_r(NULL, ":", &saveptr)){
 		if(ptr==NULL){
-			free(tmp);	// must include <stdlib.h>
+			free(tmp);
 			return(-1);
 		}
 		mac[c]=strtol(ptr, NULL, 16);
