@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <sys/types.h>
+#include <sys/types.h>	// time_t, u_int8_t
 #include "ip.h"
 
 
