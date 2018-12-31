@@ -33,7 +33,6 @@ int show_ifreq(char *name)
 		perror("socket");
 		return(-1);
 	}
-
 	strcpy(ifreq.ifr_name, name);
 
 	if(ioctl(soc, SIOCGIFFLAGS, &ifreq)==-1){
@@ -79,16 +78,39 @@ int show_ifreq(char *name)
 
 	}
 
-
-
 	return(0);
-
 }
+
 
 void sig_term(int sig)
 {
 	EndFlag=1;
 }
+
+int ending()
+{
+	struct ifreq	if_req;
+
+	printf("ending\n");
+
+	if(DeviceSoc!=-1){
+		strcpy(if_req.ifr_name, Param.device);
+		if(ioctl(DeviceSoc, SIOCGIFFLAGS, &if_req)<0){
+			perror("ioctl");
+		}
+
+		if_req.ifr_flags=if_req.ifr_flags&~IFF_PROMISC;
+		if(ioctl(DeviceSoc, SIOCSIFFLAGS, &if_req)<0){
+			perror("ictl");
+		}
+
+		close(DeviceSoc);
+		DeviceSoc=-1;
+	}
+
+	return(0);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -115,12 +137,12 @@ int main(int argc, char *argv[])
 	srandom(time(NULL));
 
 	IpRecvBufInit();
-
+	
 	if((DeviceSoc=init_socket(Param.device))==-1){
 		exit(-1);
 	}
 
-	printf("devic=%s\n", Param.device);
+	printf("device=%s\n", Param.device);
 	printf("+++++++++++++++++++++++++++++++++++++++\n");
 	show_ifreq(Param.device);
 	printf("+++++++++++++++++++++++++++++++++++++++\n");
@@ -131,6 +153,16 @@ int main(int argc, char *argv[])
 	printf("gateway=%s\n", inet_ntop(AF_INET, &Param.gateway, buf1, sizeof(buf1)));
 
 	signal(SIGINT, sig_term);
+	signal(SIGTERM, sig_term);
+	signal(SIGQUIT, sig_term);
+	signal(SIGPIPE, SIG_IGN);
+
+
+	while(EndFlag==0){
+		sleep(1);
+	}
+
+	ending();
 
 
 	return (0);
