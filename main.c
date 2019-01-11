@@ -9,16 +9,57 @@
 #include <arpa/inet.h>
 #include <signal.h>	// signal()
 #include <time.h>	// time()
+#include <pthread.h>	// pthread_
+#include <poll.h>	// pollfd
+#include <errno.h>	// errno
+#include <net/ethernet.h>
 #include "ether.h"
 #include "param.h"
 #include "sock.h"
 #include "ip.h"
+#include "arp.h"
 
 
 PARAM	Param;
 
 int EndFlag=0;
 int DeviceSoc;
+
+
+void *MyEthThread(void *arg)
+{
+	struct pollfd targets[1];
+	int	nready;
+	u_int8_t buf[2048];
+	int len;
+
+	targets[0].fd=DeviceSoc;
+	targets[0].events=POLLIN|POLLERR;
+
+	while(EndFlag==0){
+		switch((nready=poll(targets, 1, 1000))){
+			case -1:
+				if(errno!=EINTR){
+					perror("poll");
+				}
+				break;
+			case 0:
+				break;
+			default:
+				if(targets[0].revents&(POLLIN|POLLERR)){
+					if((len=read(DeviceSoc, buf, sizeof(buf)))<=0){
+						perror("read");
+						}
+					else{
+						EtherRecv(DeviceSoc, buf, len);
+					}
+					break;
+				}
+		}
+	}
+
+	return(NULL);
+}
 
 
 int show_ifreq(char *name)
@@ -116,6 +157,8 @@ int main(int argc, char *argv[])
 {
 	int paramFlag=0;
 	char buf1[80];
+	pthread_attr_t	attr;
+	//pthread_t	thread_id;
 
 	SetDefaultParam();
 
@@ -156,6 +199,15 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, sig_term);
 	signal(SIGQUIT, sig_term);
 	signal(SIGPIPE, SIG_IGN);
+
+	pthread_attr_init(&attr);
+	/*
+	pthread_attr_setstacksize(&attr, 102400);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	if(pthread_create(&thread_id, &attr, MyEthThread, NULL)!=0){
+		printf("pthread_create:error\n");
+	}
+	*/
 
 
 	while(EndFlag==0){
