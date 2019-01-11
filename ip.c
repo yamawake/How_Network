@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <sys/types.h>	// time_t, u_int8_t
+#include <net/ethernet.h>	// ether_header
 #include "ip.h"
 
 
@@ -24,3 +25,11 @@ int IpRecvBufInit()
 
 	return(0);
 }
+
+
+int IpRecv(int soc, u_int8_t *raw, int raw_len, struct ether_header *eh, u_int8_t *data, int len)
+{
+
+	return(0);
+}
+
